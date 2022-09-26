@@ -69,5 +69,5 @@
  	cat live.txt | gf sqli | qsreplace "'" | while read host do; do curl --silent --insecure $host | egrep -qs "(mysql_fetch_array|SQL syntax)" && echo "possible sql injection here $host" ; done
 
  	
- 	
- 
+---------------
+#dork
